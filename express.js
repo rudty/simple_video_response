@@ -1,6 +1,6 @@
 "use strict";
 
-const ctor = require("./video_stream_response.js");
+const ctor = require("./video_stream.js");
 const emptyFunction = () => {};
 
 module.exports = (options) => {
