@@ -5,7 +5,7 @@ const path = require("path");
 const util = require("util")
 const fsStat = util.promisify(fs.stat);
 
-const DEFAULT_STREAM_OPTIONS = {
+let DEFAULT_STREAM_OPTIONS = {
     basePath: null,
     maxChunkSize: Number.MAX_SAFE_INTEGER,
 };
@@ -47,7 +47,7 @@ const videoStreamResponse = async (filePath, httpRangeHeader, options) => {
     const fileInfo = await getFileSizeAndExt(filePath);
     const fileSize = fileInfo.size;
     const contentType = "video/" + fileInfo.ext;
-    
+
     if (!httpRangeHeader) {
         return {
             statusCode: 200,
@@ -81,7 +81,7 @@ const videoStreamResponse = async (filePath, httpRangeHeader, options) => {
     };
 };
 
-exports.videoStreamResponse = (defaultOptions) => {
+module.exports = (defaultOptions) => {
     DEFAULT_STREAM_OPTIONS = Object.assign({}, DEFAULT_STREAM_OPTIONS, defaultOptions);
     return videoStreamResponse;
 };
