@@ -1,0 +1,27 @@
+{
+  "name": "simple_video_response",
+  "version": "0.0.1",
+  "description": "video response",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rudty/simple_video_response.git"
+  },
+  "keywords": [
+    "video",
+    "mp4",
+    "stream"
+  ],
+  "author": "rudty",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/rudty/simple_video_response/issues"
+  },
+  "homepage": "https://github.com/rudty/simple_video_response#readme"
+}
