@@ -66,7 +66,7 @@ const videoStreamResponse = async (filePath, httpRangeHeader, options) => {
                 'Content-Length': fileSize,
                 'Content-Type': contentType,
             }, 
-            body: "",
+            body: " ",
         };
     }
 
