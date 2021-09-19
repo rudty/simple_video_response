@@ -5,10 +5,13 @@ const path = require("path");
 const util = require("util")
 const fsStat = util.promisify(fs.stat);
 
-let DEFAULT_STREAM_OPTIONS = {
-    basePath: null,
-    maxChunkSize: Number.MAX_SAFE_INTEGER,
-};
+const isDebug = (() => {
+    if (require('inspector').url()) {
+        return true;
+    }
+    return false;
+})();
+
 
 const fileCache = {};
 
@@ -21,30 +24,38 @@ const getExt = (filePath) =>{
 };
 
 // size, ext
+const loadFileSizeAndExt = async (filePath) => {
+    const fileStat = await fsStat(filePath);
+    const ext = getExt(filePath);
+    return {
+        size: fileStat.size,
+        ext: ext,
+    };
+};
+
 const getFileSizeAndExt = async (filePath) => {
     const cacheStat = fileCache[filePath];
     if (cacheStat) {
         return cacheStat;
     }
 
-    const fileStat = await fsStat(filePath);
-    const ext = getExt(filePath);
-    const info = {
-        size: fileStat.size,
-        ext: ext,
-    };
-
+    const info = await loadFileSizeAndExt(filePath);
     fileCache[filePath] = info;
     return info;
 };
 
+let DEFAULT_STREAM_OPTIONS = {
+    basePath: "",
+    fileStatCache: isDebug,
+    maxChunkSize: Number.MAX_SAFE_INTEGER,
+    fileSizeAndExtFn: null,
+};
+
 const videoStreamResponse = async (filePath, httpRangeHeader, options) => {
     options = Object.assign({}, DEFAULT_STREAM_OPTIONS, options);
-    if (options.basePath) {
-        filePath = path.join(String(options.basePath), filePath);
-    }
-
-    const fileInfo = await getFileSizeAndExt(filePath);
+    filePath = path.join(String(options.basePath), filePath);
+    
+    const fileInfo = await options.fileSizeAndExtFn(filePath);
     const fileSize = fileInfo.size;
     const contentType = "video/" + fileInfo.ext;
 
@@ -83,5 +94,12 @@ const videoStreamResponse = async (filePath, httpRangeHeader, options) => {
 
 module.exports = (defaultOptions) => {
     DEFAULT_STREAM_OPTIONS = Object.assign({}, DEFAULT_STREAM_OPTIONS, defaultOptions);
+
+    if (DEFAULT_STREAM_OPTIONS.fileStatCache) {
+        DEFAULT_STREAM_OPTIONS.fileSizeAndExtFn = getFileSizeAndExt;
+    } else {
+        DEFAULT_STREAM_OPTIONS.fileSizeAndExtFn = loadFileSizeAndExt; 
+    }
+
     return videoStreamResponse;
 };
