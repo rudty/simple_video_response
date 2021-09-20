@@ -34,3 +34,12 @@ fastify.get('/', (request, reply) => {
 });
 fastify.listen(3000);
 ```
+
+## option 
+```javascript
+require('simple_video_response').express({
+    basePath: "", // path to read file dir ( path.join(bathPath, "example.mp4") )
+    fileStatCache: true, // caches file info (fs.stats)
+    maxChunkSize: 1234567, // maximum sent chunk at one request
+})
+```
