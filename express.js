@@ -23,26 +23,33 @@ module.exports = (options) => {
                 throw new Error("callback is not function");
             }
 
-            const onClose = () => {
-                if (callback && typeof callback === "function") {
-                    callback(err);
-                }
+            return new Promise(async (resolve, reject) => {
 
-                if (video && video.statusCode === 206) {
-                    video.body.destroy();
-                }
+                const onClose = () => {
+                    if (callback && typeof callback === "function") {
+                        callback(err);
+                    }
 
-                video = null;
-            };
+                    if (video && video.statusCode === 206) {
+                        video.body.destroy();
+                    }
 
-            return (async () => {
+                    video = null;
+
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                };
+
                 try {
                     video = await videoStreamResponse(videoFilePath, req.headers.range, options);
 
                     for (const headerName of Object.keys(video.header)) {
                         res.setHeader(headerName, video.header[headerName]);
                     }
-                    
+
                     res.statusCode = video.statusCode;
                     if (video.statusCode === 206) {
                         video.body.pipe(res);
@@ -54,11 +61,15 @@ module.exports = (options) => {
                 } finally {
                     if (video && video.statusCode === 206) {
                         video.body.on("close", onClose);
+                        video.body.on("error", (err) => {
+                            err = e;
+                            onClose();
+                        });
                     } else {
                         onClose();
                     }
                 }
-            })();
+            });
         };
         
         next();
